@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!-- 启动spring的一些 annotation 只扫描不装配 bean -->
+    <!-- <context:annotation-config/> -->
+
+    <!--  SpringMVC的配置文件，含网站跳转的逻辑控制，配置  -->
+    <!-- <context:component-scan base-package="com.longrise.myssm" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
+    </context:component-scan> -->
+    <context:component-scan base-package="com.longrise.myssm" /><!-- 开启注解并装配 -->
+
+    <!-- 配置视图解析器-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--前缀-->
+        <property name="prefix" value="/WEB-INF/views"></property>
+        <!--后缀-->
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+    <!--两个标准配置-->
+    <!--将springmvc不能处理的请求交给tomcat-->
+    <!--能支持springmvc更高级的一些功能，JS303校验，快捷的ajax...映射动态请求-->
+    <mvc:default-servlet-handler/>
+    <!-- 开启springmvc注解支持 -->
+    <mvc:annotation-driven />
+</beans>

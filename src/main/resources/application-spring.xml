@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 头文件参考: https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative-diff-tx -->
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx" xsi:schemaLocation="http://www.springframework.org/schema/beans        
+        http://www.springframework.org/schema/beans/spring-beans.xsd    
+        http://www.springframework.org/schema/aop 
+        http://www.springframework.org/schema/aop/spring-aop.xsd    
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+    <!-- 首先配置数据源 -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <!-- 
+            特殊字符需要转义
+            &lt;	< 	小于号
+            &gt;	> 	大于号
+            &amp;	&	和
+            &apos;	'	单引号
+            &quot;	"	双引号
+        -->
+        <constructor-arg index="0" value="jdbc:mysql://127.0.0.1:3306/project?charset=utf8mb4&amp;useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true" />
+        <constructor-arg index="1" value="root" />
+        <constructor-arg index="2" value="root" />
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
+    </bean>
+
+    <!-- 配置声明式事务开始 -->
+    <!-- 装配事务管理器 -->
+    <bean name="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <!-- 配置事务通知 -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <!-- 
+                配置哪些方法需要使用事务以及事务的传播方式
+
+            事务传播行为类型	                                    说明
+            PROPAGATION_REQUIRED	    如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常见的选择。[默认]
+            PROPAGATION_SUPPORTS	    支持当前事务，如果当前没有事务，就以非事务方式执行。
+            PROPAGATION_MANDATORY	    使用当前的事务，如果当前没有事务，就抛出异常。
+            PROPAGATION_REQUIRES_NEW	新建事务，如果当前存在事务，把当前事务挂起。
+            PROPAGATION_NOT_SUPPORTED	以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。
+            PROPAGATION_NEVER	        以非事务方式执行，如果当前存在事务，则抛出异常。
+            PROPAGATION_NESTED	        如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则执行与PROPAGATION_REQUIRED类似的操作。
+            -->
+            <tx:method name="query*" read-only="true" />
+            <!-- <tx:method name="add*"  propagation="REQUIRED"/> -->
+            <tx:method name="add*" />
+            <tx:method name="post*" />
+            <tx:method name="del*" />
+            <tx:method name="test*" />
+        </tx:attributes>
+    </tx:advice>
+    <!-- 结合 aop 的切面功能实现目标方法的事务管理[原理就是动态代理] -->
+    <aop:config>
+        <aop:pointcut id="tx-ponitcut" expression="execution(* com.longrise.myssm.service.impl.*.*(..))" />
+        <aop:advisor pointcut-ref="tx-ponitcut" advice-ref="txAdvice" />
+    </aop:config>
+    <!-- 配置声明式事务结束 -->
+
+
+    <!-- 配置 sqlSessionFactory 用它来生成 sql 模板-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:mybatis-config.xml" />
+        <!-- 在取消 mybatis 配置文件时, 可以这么装配 mapper 映射文件 -->
+        <!-- <property name="mapperLocations" value="classpath:com/longrise/mybatis/mapper/*mapper.xml"/> -->
+    </bean>
+    <!-- 使用注解(dao 层接口) -->
+    <bean id="dataMsgMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+        <!-- 装配自定义的 mapper -->
+        <property name="mapperInterface" value="com.longrise.myssm.dao.DataMsgMapper" />
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"></property>
+    </bean>
+
+</beans>
