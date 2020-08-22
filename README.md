@@ -5,7 +5,7 @@ spring+springmvc+mybatis
 * 详细请参考[spring-study](https://github.com/Ashesoft/spring-study.git)这个项目
 
 # 视图解析
-* `org.springframework.web.servlet.view.JstlView`使用 JSP 作为页面展示<span style="color:red">不推荐</span>
+* `org.springframework.web.servlet.view.JstlView`使用 JSP 作为页面展示**不推荐**
     * 添加依赖, 虽然 spring 默认使用的是 JSP, 但还要导入 jstl 表达式的标签库 
     ```xml
     <dependency>
@@ -124,3 +124,38 @@ spring+springmvc+mybatis
     ```
     * 具体使用请参考[官网](https://www.thymeleaf.org/doc/tutorials/3.0/thymeleafspring.html#the-springstandard-dialect)
 
+# 使用 maven 时, 跳过测试
+* 命令行加参数
+```bat
+mav package -DskipTests
+```
+或
+```bat
+mav package -Dmaven.test.skip=true
+```
+* 使用 maven 插件
+```xml
+<plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-surefire-plugin</artifactId>
+	<version>2.18.1</version>
+	<configuration>
+		<skipTests>true</skipTests>
+	</configuration>
+</plugin>
+```
+* 在`pom.xml`文件中定义变量
+```xml
+  <properties>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <!-- 
+      使用 maven 相关命令时, 不执行测试用例
+      下面的二选一, 都有效, 却别如下:
+      -DskipTests               不执行测试用例, 但会编译测试用例类
+      -Dmaven.test.skip=true    不执行测试用例, 也不编译测试用例类
+    -->
+    <maven.test.skip>true</maven.test.skip>
+    <!-- <skipTests>true</skipTests> -->
+  </properties>
+```
